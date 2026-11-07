@@ -1,14 +1,14 @@
 #Game Manager
 extends Node
 
-signal puzzle_found(puzzle)
+signal puzzle_found(puzzle: Puzzle)
 
-var word_dict: Dictionary = {"test": "test"}
+var word_dict: Dictionary = {}
 
-func word_input(word: String) -> Node3D:
-	print("Player inputted: " + word)
-	if (word_dict.get(word)):
+func word_input(word: String) -> void:
+	var lower_word = word.to_lower()
+	print("Player inputted: " + lower_word)
+	if (word_dict.get(lower_word)):
 		print("Puzzle found!")
-	puzzle_found.emit(word_dict.get(word))
-	return null
+		puzzle_found.emit(word_dict.get(lower_word))
 	

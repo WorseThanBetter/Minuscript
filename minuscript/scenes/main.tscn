@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dirv0q16ubfi7"]
 
 [ext_resource type="PackedScene" uid="uid://cq2dcgivob5ed" path="res://scenes/player.tscn" id="1_o5qli"]
+[ext_resource type="Script" uid="uid://b7mtg3ka4s6xy" path="res://scripts/puzzle.gd" id="2_0wfyh"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_o5qli"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -15,10 +16,12 @@ sky = SubResource("Sky_0wfyh")
 glow_enabled = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_hd2bn"]
-size = Vector3(40, 0.5, 40)
+size = Vector3(100, 0.5, 100)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0wfyh"]
-size = Vector3(40, 0.5, 40)
+size = Vector3(100, 0.5, 100)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5ngj4"]
 
 [node name="main" type="Node3D" unique_id=1250407474]
 
@@ -29,15 +32,31 @@ environment = SubResource("Environment_sugp2")
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
 shadow_enabled = true
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1620510652]
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1620510652]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1597726853]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground" unique_id=1597726853]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.24047852, 0)
 mesh = SubResource("BoxMesh_hd2bn")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=975227643]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=1415231611]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.24047852, 0)
 shape = SubResource("BoxShape3D_0wfyh")
 
-[node name="player" parent="StaticBody3D" unique_id=1314175734 instance=ExtResource("1_o5qli")]
+[node name="player" parent="Ground" unique_id=1314175734 instance=ExtResource("1_o5qli")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43622065, 1.0095215, 5.2767878)
+
+[node name="Filter" type="Node3D" parent="." unique_id=1678059396]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.4049149, 0)
+script = ExtResource("2_0wfyh")
+solution = "filter"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Filter" unique_id=175504587]
+mesh = SubResource("BoxMesh_5ngj4")
+
+[node name="Hello" type="Node3D" parent="." unique_id=1006290050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.545807, 3.4049149, 0)
+script = ExtResource("2_0wfyh")
+solution = "hello"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Hello" unique_id=224917313]
+mesh = SubResource("BoxMesh_5ngj4")

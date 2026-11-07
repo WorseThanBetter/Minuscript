@@ -1,11 +1,13 @@
 extends CharacterBody3D
 
 const PUSH_FORCE = 1
-const SPEED = 5.0
+const SPEED = 6.0
 const JUMP_VELOCITY = 4.5
 const MOUSE_SENSITIVITY = 0.15
 const MOUSE_INVERT = 1 # -1 for inverted y
 
+enum States {MOVING,WRITING,MENU}
+var current_state = States.MOVING
 
 
 @export var neck_vertical: Node3D
@@ -22,21 +24,20 @@ func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	GM.puzzle_found.connect(found_puzzle)
 	
-
+	
 func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("escape"):
-		if Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
-			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		if current_state == States.MENU:
+			switch_state(States.MOVING)
+		elif current_state == States.WRITING:
+			switch_state(States.MOVING)
 		else:
-			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	
-	if Input.is_action_just_pressed("write"):
-		movement_frozen = !movement_frozen
-		line_edit.grab_focus()
+			switch_state(States.MENU)
+	if Input.is_action_just_pressed("write") && current_state == States.MOVING:
+		switch_state(States.WRITING)
 
-	# Add the gravity.
-
+	# Add the gravity. Holding jump decreases gravity while travelling upwards.
 	if not is_on_floor():
 		if velocity.y > 0 and Input.is_action_pressed("jump"):
 				velocity += get_gravity() * delta
@@ -57,20 +58,14 @@ func _physics_process(delta: float) -> void:
 			velocity.x = direction.x * SPEED
 			velocity.z = direction.z * SPEED
 		else:
-			velocity.x = move_toward(velocity.x, 0, SPEED/2)
-			velocity.z = move_toward(velocity.z, 0, SPEED/2)
+			velocity.x = move_toward(velocity.x, 0, SPEED/4)
+			velocity.z = move_toward(velocity.z, 0, SPEED/4)
 
+	velocity.x = move_toward(velocity.x, 0, SPEED/32)
+	velocity.z = move_toward(velocity.z, 0, SPEED/32)
+	
 	move_and_slide()
-			
 
-	for i in get_slide_collision_count():
-		var collision = get_slide_collision(i)
-		var collider = collision.get_collider()
-		#Box Pushing
-		if collider is RigidBody3D and collider.is_in_group("Pushed"):
-			# Apply an impulse at the collision point in the opposite direction of the normal
-			var push_dir = -collision.get_normal()
-			collider.apply_impulse(push_dir * PUSH_FORCE, collision.get_position() - collider.global_position)
 
 
 func _input(event):
@@ -84,12 +79,44 @@ func _input(event):
 
 
 func _on_line_edit_text_submitted(new_text: String) -> void:
-	print("User typed: ", new_text)
 	GM.word_input(new_text)
-	line_edit.clear() 
-	line_edit.release_focus()
-	movement_frozen = false
-	
-func found_puzzle(puzzle) -> void:
+	line_edit.clear()
+	switch_state(States.MOVING)
+
+# Called from GM when the player submits a valid word.
+# @param found_puzzle: the puzzle that was just solved.
+func found_puzzle(found_puzzle: Puzzle) -> void:
 	print("Player registered that puzzle was found.")
+	found_puzzle.destroy(self)
+	GM.word_dict.erase(found_puzzle.solution.to_lower())
+
+# Function to safely switch between states, ensuring correct behavior.
+# @param new_state: the state to switch to.
+func switch_state(new_state: States):
 	
+	# Behaviors that happen when exiting the current state.
+	match current_state:
+		States.MOVING:
+			movement_frozen = true
+		States.WRITING:
+			line_edit.release_focus()
+			line_edit.visible = false
+		States.MENU:
+			movement_frozen = true
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		_:
+			pass
+	
+	# Behaviors that happen when switching to this state.
+	match new_state:
+		States.MOVING:
+			movement_frozen = false
+			line_edit.release_focus()
+		States.WRITING:
+			line_edit.grab_focus()
+			line_edit.visible = true
+		States.MENU:
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		_:
+			pass
+	current_state = new_state

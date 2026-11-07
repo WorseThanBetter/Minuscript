@@ -31,6 +31,7 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="LineEdit" type="LineEdit" parent="Control" unique_id=1490143914]
+visible = false
 layout_mode = 0
 offset_left = 601.986
 offset_top = 472.81653
@@ -40,5 +41,6 @@ rotation = 0.1117499
 theme_override_font_sizes/font_size = 32
 max_length = 24
 selecting_enabled = false
+deselect_on_focus_loss_enabled = false
 
 [connection signal="text_submitted" from="Control/LineEdit" to="." method="_on_line_edit_text_submitted"]
